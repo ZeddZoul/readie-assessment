@@ -6,6 +6,7 @@ import { Link } from 'react-router';
 import { useRoomEvaluation } from '../../api/queries';
 import { AsyncBoundary } from '../../components/ui/AsyncBoundary';
 import { LuChevronLeft } from 'react-icons/lu';
+import { ErrorBoundary } from '../../components/ui/ErrorBoundary';
 import { Reveal } from '../../components/ui/Reveal';
 import { Tooltip } from '../../components/ui/Tooltip';
 import { RoomSkeleton } from '../../components/ui/Skeletons';
@@ -95,6 +96,24 @@ function tabCount(tab: RoomTab, r: AnalysedRecording | null): number | null {
 }
 
 /** Short crossfade when a tab panel (or the selected recording) changes; static under reduced motion. */
+/** One tab failing to render (e.g. on unexpected data) must not take down the header or the other tabs. */
+function TabBoundary({ resetKey, children }: { readonly resetKey: string; readonly children: ReactNode }) {
+  return (
+    <ErrorBoundary
+      resetKey={resetKey}
+      fallback={(_error, reset) => (
+        <div role="alert" className="flex flex-col items-center gap-3 rounded-card bg-white p-8 text-center shadow-card">
+          <p className="font-semibold text-slate-900">This tab couldn’t be displayed</p>
+          <p className="max-w-sm text-sm text-slate-600">Something in this recording’s data couldn’t be shown. The other tabs are unaffected.</p>
+          <Button onClick={reset}>Try again</Button>
+        </div>
+      )}
+    >
+      {children}
+    </ErrorBoundary>
+  );
+}
+
 function TabFade({ children }: { readonly children: ReactNode }) {
   const reduce = useReducedMotion();
   if (reduce) return <div>{children}</div>;
@@ -169,17 +188,23 @@ function RoomView({ room }: { readonly room: RoomEvaluation }) {
           </div>
           <Tabs.Content value="transcript" className="pt-6 outline-none">
             <TabFade key={selected?.id ?? 'none'}>
-              <TranscriptTab recording={selected} />
+              <TabBoundary resetKey={selected?.id ?? 'none'}>
+                <TranscriptTab recording={selected} />
+              </TabBoundary>
             </TabFade>
           </Tabs.Content>
           <Tabs.Content value="identity" className="pt-6 outline-none">
             <TabFade key={selected?.id ?? 'none'}>
-              <IdentityTab recording={selected} />
+              <TabBoundary resetKey={selected?.id ?? 'none'}>
+                <IdentityTab recording={selected} />
+              </TabBoundary>
             </TabFade>
           </Tabs.Content>
           <Tabs.Content value="integrity" className="pt-6 outline-none">
             <TabFade key={selected?.id ?? 'none'}>
-              <IntegrityTab recording={selected} />
+              <TabBoundary resetKey={selected?.id ?? 'none'}>
+                <IntegrityTab recording={selected} />
+              </TabBoundary>
             </TabFade>
           </Tabs.Content>
         </Tabs.Root>

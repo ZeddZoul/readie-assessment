@@ -52,6 +52,10 @@ because room URLs contain dots), proxies `GET /api/*` without re-encoding the pa
 credentials, so a proxy-mode build contains no secrets. A mock-mode build is a plain static site and can be hosted
 anywhere that rewrites unknown paths to `index.html`.
 
+**Vercel:** `vercel.json` rewrites every path without a matching file to `index.html` (static files such as `/assets/*`
+and `mockServiceWorker.js` are served first), so reloading or pasting a deep link like `/jobs/campaign/119` works.
+Vercel doesn't run `server/serve.mjs`, so a Vercel deployment uses mock mode unless an API proxy is added there.
+
 ## Scripts
 
 | Command | What it does |
@@ -98,6 +102,15 @@ anywhere that rewrites unknown paths to `index.html`.
   sends no requests.
 - **Long transcripts:** only the first 12 entries animate in; the rest render statically (no observer per entry).
 - **Code-splitting:** each route is its own chunk, so the room page's code loads only when a room opens.
+
+### Errors and 404
+
+- **Root boundary** around the whole app: an unexpected crash shows a reload screen instead of a blank page.
+- **Route boundary** inside the layout: the header stays usable; stale code-split chunks after a new deploy show
+  “A new version is available” and reload once automatically.
+- **Per-tab boundary** on the room page: one tab failing on unexpected data doesn't affect the header or other tabs;
+  switching recording or pressing “Try again” retries it.
+- **Custom 404 page** for unknown addresses, showing the path and quick links back to campaigns.
 
 ### Tooltips
 

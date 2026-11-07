@@ -30,4 +30,11 @@ test.describe('async states on demand', () => {
     await page.goto(roomUrl('campaign_119interview~~katherine.j@example.test~~c3d4e5f6a1b2'));
     await expect(page.getByText('No recordings found for this room')).toBeVisible();
   });
+
+  test('an unknown address shows the custom 404 page with a way back', async ({ page }) => {
+    await page.goto('/jobs/campaigns/119');
+    await expect(page.getByRole('heading', { name: /this page doesn’t exist/i })).toBeVisible();
+    await page.getByRole('link', { name: 'Go to campaigns' }).click();
+    await expect(page).toHaveURL(/\/jobs\/campaign\/119$/);
+  });
 });
