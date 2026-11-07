@@ -1,3 +1,5 @@
+import { isOneOf } from '../lib/guards';
+
 export const ROOM_TABS = ['transcript', 'identity', 'integrity'] as const;
 export type RoomTab = (typeof ROOM_TABS)[number];
 export const DEFAULT_TAB: RoomTab = 'transcript';
@@ -16,7 +18,7 @@ export const TAB_SHORT_LABELS: Readonly<Record<RoomTab, string>> = {
 };
 
 export function isRoomTab(value: string): value is RoomTab {
-  return (ROOM_TABS as readonly string[]).includes(value);
+  return isOneOf(ROOM_TABS, value);
 }
 
 export function parseTab(value: string | null): { tab: RoomTab; wasValid: boolean } {

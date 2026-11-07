@@ -54,7 +54,7 @@ describe('apiGet', () => {
     const parse = (j: unknown) => ({ ok: true as const, value: j });
     server.use(http.get('http://localhost:3000/api/http500', () => new HttpResponse('nope', { status: 500 })));
     server.use(http.get('http://localhost:3000/api/bad-json', () => new HttpResponse('{', { status: 200 })));
-    server.use(http.get('http://localhost:3000/api/net', () => HttpResponse.error()));
+    server.use(http.get('http://localhost:3000/api/net', () => Response.error()));
     const kind = async (p: string) => {
       try {
         await apiGet(p, parse, undefined, cfg);

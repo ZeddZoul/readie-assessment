@@ -68,8 +68,11 @@ anywhere that rewrites unknown paths to `index.html`.
   page reads the still-encoded pathname and decodes it once, so names with `@`, spaces, `/`, `#`, `?` survive
   clicks, pasted URLs and refreshes. A double-encoded name would make the API answer 400.
 - `src/api/schemas.ts` validates every response with zod schemas checked against explicit `Raw*` interfaces;
-  `src/domain/adapters.ts` maps them to view models; shape mismatches become an Error state. No `any` and no type
-  assertions anywhere.
+  `src/domain/adapters.ts` maps them to view models; shape mismatches become an Error state.
+- **Type safety:** `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, and `checkJs` for the server and
+  scripts. `npm run check:types` walks every file with the TypeScript checker and fails on explicit or implicit `any`,
+  type assertions (other than `as const`), non-null assertions and suppression comments. `JSON.parse` and
+  `Response.json()` are declared to return `unknown` (`src/types/safe-builtins.d.ts`).
 - `src/state/async-state.ts`: every call is `loading | error | empty | success`, rendered with an exhaustive switch.
   Loading states use skeletons shaped like the real layout.
 - **URL state:** room in the path, `?tab=` for the tab and `?rec=` for a non-default recording (the newest is the
@@ -96,6 +99,12 @@ anywhere that rewrites unknown paths to `index.html`.
 - **Long transcripts:** only the first 12 entries animate in; the rest render statically (no observer per entry).
 - **Code-splitting:** each route is its own chunk, so the room page's code loads only when a room opens.
 
+### Tooltips
+
+Controls whose meaning isn't obvious (campaign switcher, “2 of 4” finder, the `/` key, chevrons, Copy link, verdict
+tiles, tab counts, recording picker, sort) show a short hint with any keyboard shortcut. Tooltips appear on hover or
+keyboard focus, hide on Escape, ignore touch, and are rendered in a portal so they're never clipped.
+
 ### UI
 
 Apple-style minimal design: system font (SF Pro on Apple platforms), Apple greys, dodger-blue accent used sparingly,
@@ -116,8 +125,6 @@ The live API differs from the brief. Fields the brief names but the API lacks ar
 | PASSED / WARNING / FAILED | `disposition` strings | D3 |
 | One evaluation per room | 0–16 recordings, some unanalysed | newest analysed by default + selector |
 
-In dev builds a temporary **/help** page (link in the dev toolbar) explains each rule with live examples.
-Remove it by deleting `src/features/help/`, its route in `src/app/router.tsx` and the link in `src/app/DevToolbar.tsx`.
 
 ## "Before you submit" checklist → tests
 
@@ -128,6 +135,6 @@ Remove it by deleting `src/features/help/`, its route in `src/app/router.tsx` an
 | All three tabs render, active tab in URL | `room.spec.ts`, `RoomPage.test.tsx`, Property 11 |
 | Back / Forward | `room.spec.ts` |
 | Loading / Error / Empty / Success for every call | `tests/e2e/states.spec.ts`, Property 13 |
-| No `any` | ESLint rules + `npm run check:any` |
+| No `any` | ESLint rules + `npm run check:types` (TypeScript-checker scan of app, tests, configs, server and scripts: explicit and implicit `any`, assertions, suppressions) |
 | Runs fully offline | mock mode default; e2e runs offline |
 | Credentials in env vars | `src/config/env.ts`, `.env.example`, `.env*.local` git-ignored; proxy mode keeps them out of the bundle |

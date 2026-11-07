@@ -7,6 +7,7 @@ import { useCampaignJobs } from '../../api/queries';
 import { Avatar } from '../../components/ui/Avatar';
 import { ComboboxPopover, type ComboboxItem } from '../../components/ui/ComboboxPopover';
 import { PagerSkeleton } from '../../components/ui/Skeletons';
+import { Tooltip } from '../../components/ui/Tooltip';
 import { TONE_DOT, VERIFICATION_TONE } from '../../components/ui/StatusTag';
 import type { EvaluationJob } from '../../domain/types';
 import { roomPath } from '../../lib/roomName';
@@ -26,9 +27,11 @@ function Step({ to, label, shortcut, children }: { readonly to: string | null; r
     );
   }
   return (
-    <Link to={to} className={clsx(SEGMENT, 'text-slate-700 hover:bg-slate-100 hover:text-slate-900')} aria-label={label} aria-keyshortcuts={shortcut} title={`${label} (${shortcut.toUpperCase()})`}>
-      {children}
-    </Link>
+    <Tooltip content={label} shortcut={shortcut.toUpperCase()} describe={false}>
+      <Link to={to} className={clsx(SEGMENT, 'text-slate-700 hover:bg-slate-100 hover:text-slate-900')} aria-label={label} aria-keyshortcuts={shortcut}>
+        {children}
+      </Link>
+    </Tooltip>
   );
 }
 
@@ -124,6 +127,7 @@ export function CandidatePager({ campaignId, roomName }: { readonly campaignId: 
             <LuChevronsUpDown aria-hidden="true" size={14} />
           </>
         }
+        tooltip="Find a candidate"
         dialogLabel="Find a candidate"
         inputLabel="Search candidates by name or email"
         placeholder="Search name or email"

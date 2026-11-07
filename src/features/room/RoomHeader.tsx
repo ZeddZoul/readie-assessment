@@ -6,6 +6,7 @@ import { StatusTag } from '../../components/ui/StatusTag';
 import { classifyConfidence } from '../../domain/derive';
 import type { AnalysedRecording, AnalysisCompleteness, RoomEvaluation } from '../../domain/types';
 import { Select } from '../../components/ui/Select';
+import { Tooltip } from '../../components/ui/Tooltip';
 import { formatPercent, formatTime } from '../../lib/time';
 import type { RoomTab } from '../../state/tab';
 
@@ -24,21 +25,23 @@ function CopyLinkButton() {
     return () => window.clearTimeout(t);
   }, [state]);
   return (
-    <button
-      type="button"
-      onClick={() => {
-        navigator.clipboard.writeText(window.location.href).then(
-          () => setState('copied'),
-          () => setState('error'),
-        );
-      }}
-      className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-slate-100 p-2 text-sm font-semibold text-slate-800 transition-colors duration-200 hover:bg-slate-200/70 sm:px-3 sm:py-1.5"
-    >
-      {state === 'copied' ? <LuCheck aria-hidden="true" size={15} className="text-emerald-600" /> : <LuLink aria-hidden="true" size={15} />}
-      <span aria-live="polite" className="sr-only sm:not-sr-only">
-        {state === 'copied' ? 'Copied' : state === 'error' ? 'Copy failed' : 'Copy link'}
-      </span>
-    </button>
+    <Tooltip content="Copy a link to this exact view (room, tab and recording)">
+      <button
+        type="button"
+        onClick={() => {
+          navigator.clipboard.writeText(window.location.href).then(
+            () => setState('copied'),
+            () => setState('error'),
+          );
+        }}
+        className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-slate-100 p-2 text-sm font-semibold text-slate-800 transition-colors duration-200 hover:bg-slate-200/70 sm:px-3 sm:py-1.5"
+      >
+        {state === 'copied' ? <LuCheck aria-hidden="true" size={15} className="text-emerald-600" /> : <LuLink aria-hidden="true" size={15} />}
+        <span aria-live="polite" className="sr-only sm:not-sr-only">
+          {state === 'copied' ? 'Copied' : state === 'error' ? 'Copy failed' : 'Copy link'}
+        </span>
+      </button>
+    </Tooltip>
   );
 }
 
@@ -48,26 +51,30 @@ function VerdictTile({
   onClick,
   children,
   hint,
+  tip,
 }: {
   readonly label: string;
   readonly short: string;
   readonly onClick: () => void;
   readonly children: ReactNode;
   readonly hint: string;
+  readonly tip: string;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={`${label}: ${hint}. Open tab`}
-      className="group flex min-w-0 flex-col items-start rounded-2xl bg-slate-50 px-3 py-2.5 text-left transition-[background-color,box-shadow] duration-200 ease-out-soft hover:bg-white hover:shadow-card sm:px-3.5 sm:py-3"
-    >
-      <span className="text-eyebrow max-w-full truncate text-slate-500 group-hover:text-brand-700">
-        <span className="sm:hidden">{short}</span>
-        <span className="hidden sm:inline">{label}</span>
-      </span>
-      <span className="mt-1.5 flex min-h-6 items-center">{children}</span>
-    </button>
+    <Tooltip content={tip} describe={false} className="min-w-0">
+      <button
+        type="button"
+        onClick={onClick}
+        aria-label={`${label}: ${hint}. Open tab`}
+        className="group flex min-w-0 flex-col items-start rounded-2xl bg-slate-50 px-3 py-2.5 text-left transition-[background-color,box-shadow] duration-200 ease-out-soft hover:bg-white hover:shadow-card sm:px-3.5 sm:py-3"
+      >
+        <span className="text-eyebrow max-w-full truncate text-slate-500 group-hover:text-brand-700">
+          <span className="sm:hidden">{short}</span>
+          <span className="hidden sm:inline">{label}</span>
+        </span>
+        <span className="mt-1.5 flex min-h-6 items-center">{children}</span>
+      </button>
+    </Tooltip>
   );
 }
 
@@ -107,10 +114,10 @@ export function RoomHeader({
 
       {selected ? (
         <div className="mt-4 grid grid-cols-3 gap-2 border-t border-slate-100 pt-4 sm:gap-3">
-          <VerdictTile label="Integrity" short="Integrity" hint={integrity?.status ?? 'unavailable'} onClick={() => onOpenTab('integrity')}>
+          <VerdictTile label="Integrity" short="Integrity" tip="Overall proctoring verdict. Opens Integrity & Proctoring" hint={integrity?.status ?? 'unavailable'} onClick={() => onOpenTab('integrity')}>
             {integrity ? <StatusTag kind="integrity" value={integrity.status} /> : <span className="text-sm text-slate-500">n/a</span>}
           </VerdictTile>
-          <VerdictTile label="Identity match" short="Identity" hint={identity ? `${formatPercent(identity.matchConfidence)}, ${identity.decisionLabel.toLowerCase()}` : 'unavailable'} onClick={() => onOpenTab('identity')}>
+          <VerdictTile label="Identity match" short="Identity" tip="How closely the candidate matches the reference video. Opens Identity Verification" hint={identity ? `${formatPercent(identity.matchConfidence)}, ${identity.decisionLabel.toLowerCase()}` : 'unavailable'} onClick={() => onOpenTab('identity')}>
             {identity ? (
               <span className="flex items-center gap-1.5 text-lg leading-none font-semibold tracking-tight text-slate-900 tabular-nums">
                 <span
@@ -124,7 +131,7 @@ export function RoomHeader({
               <span className="text-sm text-slate-500">n/a</span>
             )}
           </VerdictTile>
-          <VerdictTile label="Flagged frames" short="Flags" hint={integrity ? String(integrity.flaggedFrames.length) : 'unavailable'} onClick={() => onOpenTab('integrity')}>
+          <VerdictTile label="Flagged frames" short="Flags" tip="Moments worth a closer look. Opens Integrity & Proctoring" hint={integrity ? String(integrity.flaggedFrames.length) : 'unavailable'} onClick={() => onOpenTab('integrity')}>
             <span className="text-lg leading-none font-semibold tracking-tight text-slate-900 tabular-nums">{integrity ? integrity.flaggedFrames.length : '—'}</span>
           </VerdictTile>
         </div>
@@ -147,7 +154,18 @@ export function RecordingSelect({
     label: `${formatShortDate(r.createdAt)} · ${formatTime(r.createdAt)}${i === 0 ? ' · Latest' : ''}`,
     trailing: r.integrity ? <StatusTag kind="integrity" value={r.integrity.status} /> : undefined,
   }));
-  return <Select className="w-full sm:w-80" label="Analysed recording" hideLabel align="end" value={value} options={options} onChange={onChange} />;
+  return (
+    <Select
+      className="w-full sm:w-80"
+      label="Analysed recording"
+      hideLabel
+      align="end"
+      value={value}
+      options={options}
+      onChange={onChange}
+      tooltip="This room has several analysed recordings. Switch between them here"
+    />
+  );
 }
 
 const shortDate = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' });

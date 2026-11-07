@@ -8,6 +8,9 @@ import { readFile, stat } from 'node:fs/promises';
 import { extname, join, normalize, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+/** @typedef {import('node:http').IncomingMessage} Request */
+/** @typedef {import('node:http').ServerResponse} Response */
+
 const PORT = Number(process.env.PORT ?? 8080);
 const DIST = fileURLToPath(new URL('../dist/', import.meta.url));
 const BASE = process.env.VITE_API_BASE_PATH ?? '/api';
@@ -17,6 +20,7 @@ const SERVER_AUTH =
     ? { MyAuthorizationx: process.env.API_AUTH_KEY, Authorization: `Basic ${process.env.API_BASIC_TOKEN}` }
     : null;
 
+/** @type {Readonly<Record<string, string>>} */
 const TYPES = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
@@ -28,11 +32,17 @@ const TYPES = {
   '.woff2': 'font/woff2',
 };
 
-async function proxy(req, res) {
+/**
+ * @param {Request} req
+ * @param {Response} res
+ * @param {string} url
+ */
+async function proxy(req, res, url) {
   if (!TARGET) return send(res, 502, 'API_PROXY_TARGET is not configured');
   if (req.method !== 'GET') return send(res, 405, 'Method not allowed');
   // Forward the raw (still percent-encoded) path: never decode or re-encode room names.
-  const upstream = TARGET.replace(/\/$/, '') + req.url.slice(BASE.length);
+  const upstream = TARGET.replace(/\/$/, '') + url.slice(BASE.length);
+  /** @type {Record<string, string>} */
   const headers = { 'Content-Type': 'application/json' };
   if (SERVER_AUTH) Object.assign(headers, SERVER_AUTH);
   else {
@@ -50,13 +60,24 @@ async function proxy(req, res) {
   }
 }
 
-async function serveStatic(req, res) {
-  let pathname;
+/**
+ * @param {string} url
+ * @returns {string} the decoded pathname, or "/" when it cannot be decoded
+ */
+function decodePathname(url) {
   try {
-    pathname = decodeURIComponent(new URL(req.url, 'http://local').pathname);
+    return decodeURIComponent(new URL(url, 'http://local').pathname);
   } catch {
-    pathname = '/';
+    return '/';
   }
+}
+
+/**
+ * @param {Response} res
+ * @param {string} url
+ */
+async function serveStatic(res, url) {
+  const pathname = decodePathname(url);
   const file = normalize(join(DIST, pathname));
   const inside = file === DIST.replace(/[/\\]$/, '') || file.startsWith(DIST.endsWith(sep) ? DIST : DIST + sep);
   if (inside) {
@@ -68,7 +89,8 @@ async function serveStatic(req, res) {
           'Content-Type': TYPES[extname(file)] ?? 'application/octet-stream',
           'Cache-Control': immutable ? 'public, max-age=31536000, immutable' : 'no-cache',
         });
-        return res.end(await readFile(file));
+        res.end(await readFile(file));
+        return;
       }
     } catch {
       // fall through to the SPA shell
@@ -79,6 +101,11 @@ async function serveStatic(req, res) {
   res.end(await readFile(join(DIST, 'index.html')));
 }
 
+/**
+ * @param {Response} res
+ * @param {number} status
+ * @param {string} message
+ */
 function send(res, status, message) {
   res.writeHead(status, { 'Content-Type': 'text/plain; charset=utf-8' });
   res.end(message);
@@ -86,8 +113,8 @@ function send(res, status, message) {
 
 createServer((req, res) => {
   const url = req.url ?? '/';
-  if (url === BASE || url.startsWith(`${BASE}/`)) return void proxy(req, res);
-  return void serveStatic(req, res);
+  if (url === BASE || url.startsWith(`${BASE}/`)) return void proxy(req, res, url);
+  return void serveStatic(res, url);
 }).listen(PORT, () => {
   console.log(`Readie Audit Portal on http://localhost:${PORT} (credentials: ${SERVER_AUTH ? 'injected by server' : 'from browser'})`);
 });

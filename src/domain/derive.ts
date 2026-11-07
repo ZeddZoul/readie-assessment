@@ -1,6 +1,6 @@
 /**
  * Derivation rules D1–D12 (see .kiro/specs/candidate-audit-portal/design.md).
- * Every function is pure and total. The /help page renders these rules by calling them.
+ * Every function is pure and total.
  */
 import type {
   AnalysisCompleteness,

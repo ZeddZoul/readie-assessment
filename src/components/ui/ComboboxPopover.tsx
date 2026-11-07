@@ -2,6 +2,7 @@ import clsx from 'clsx';
 import { AnimatePresence, motion } from 'motion/react';
 import { Fragment, useCallback, useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { LuCheck, LuSearch } from 'react-icons/lu';
+import { Tooltip } from './Tooltip';
 
 export interface ComboboxItem {
   /** Value passed to onChoose. */
@@ -30,6 +31,8 @@ export interface ComboboxPopoverProps {
   readonly inputMode?: 'text' | 'numeric';
   /** Single key that opens the popover from anywhere (ignored while typing in a field). */
   readonly shortcut?: string;
+  /** Hint shown when hovering or keyboard-focusing the trigger. */
+  readonly tooltip?: string;
 }
 
 const isTyping = (t: EventTarget | null) => t instanceof HTMLElement && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
@@ -55,6 +58,7 @@ export function ComboboxPopover({
   align = 'end',
   inputMode = 'text',
   shortcut,
+  tooltip,
 }: ComboboxPopoverProps) {
   const id = useId();
   const root = useRef<HTMLDivElement>(null);
@@ -138,18 +142,35 @@ export function ComboboxPopover({
 
   return (
     <div ref={root} className="relative">
-      <button
-        ref={trigger}
-        type="button"
-        aria-haspopup="dialog"
-        aria-expanded={open}
-        aria-label={triggerLabel}
-        aria-keyshortcuts={shortcut}
-        onClick={() => (open ? close(false) : openMenu())}
-        className={triggerClassName}
-      >
-        {triggerContent}
-      </button>
+      {tooltip ? (
+        <Tooltip content={tooltip} describe={false} {...(shortcut ? { shortcut } : {})}>
+        <button
+          ref={trigger}
+          type="button"
+          aria-haspopup="dialog"
+          aria-expanded={open}
+          aria-label={triggerLabel}
+          aria-keyshortcuts={shortcut}
+          onClick={() => (open ? close(false) : openMenu())}
+          className={triggerClassName}
+        >
+          {triggerContent}
+        </button>
+        </Tooltip>
+      ) : (
+        <button
+          ref={trigger}
+          type="button"
+          aria-haspopup="dialog"
+          aria-expanded={open}
+          aria-label={triggerLabel}
+          aria-keyshortcuts={shortcut}
+          onClick={() => (open ? close(false) : openMenu())}
+          className={triggerClassName}
+        >
+          {triggerContent}
+        </button>
+      )}
 
       <AnimatePresence>
         {open ? (

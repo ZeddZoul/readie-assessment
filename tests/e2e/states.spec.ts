@@ -30,9 +30,4 @@ test.describe('async states on demand', () => {
     await page.goto(roomUrl('campaign_119interview~~katherine.j@example.test~~c3d4e5f6a1b2'));
     await expect(page.getByText('No recordings found for this room')).toBeVisible();
   });
-
-  test('the /help page is not part of the production build', async ({ page }) => {
-    await page.goto('/help');
-    await expect(page.getByText('Page not found')).toBeVisible();
-  });
 });

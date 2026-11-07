@@ -99,6 +99,7 @@ export function CampaignSwitcher({ current }: { readonly current: number | null 
           <LuChevronsUpDown aria-hidden="true" size={14} className="text-slate-500" />
         </>
       }
+      tooltip="Switch campaign"
       dialogLabel="Switch campaign"
       inputLabel="Find or enter a campaign ID"
       placeholder="Search campaigns"

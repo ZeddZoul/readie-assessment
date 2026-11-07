@@ -8,7 +8,7 @@ describe('Property 11: tab parsing is total and canonical', () => {
       fc.property(fc.option(fc.string(), { nil: null }), (v) => {
         const { tab, wasValid } = parseTab(v);
         expect(ROOM_TABS).toContain(tab);
-        expect(wasValid).toBe(v !== null && (ROOM_TABS as readonly string[]).includes(v));
+        expect(wasValid).toBe(v !== null && ROOM_TABS.some((t) => t === v));
       }),
       { numRuns: 200 },
     );

@@ -2,6 +2,7 @@ import clsx from 'clsx';
 import { AnimatePresence, motion } from 'motion/react';
 import { useCallback, useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { LuCheck, LuChevronDown } from 'react-icons/lu';
+import { Tooltip } from './Tooltip';
 
 export interface SelectOption<T extends string> {
   readonly value: T;
@@ -19,13 +20,15 @@ export interface SelectProps<T extends string> {
   readonly align?: 'start' | 'end';
   readonly className?: string;
   readonly size?: 'sm' | 'md';
+  /** Hint shown when hovering or keyboard-focusing the trigger. */
+  readonly tooltip?: string;
 }
 
 /**
  * Accessible custom select (WAI-ARIA listbox pattern): button + popup listbox with
  * aria-activedescendant, arrow keys, Home/End, type-ahead, Enter/Space, Escape and click-outside.
  */
-export function Select<T extends string>({ label, hideLabel, value, options, onChange, align = 'start', className, size = 'md' }: SelectProps<T>) {
+export function Select<T extends string>({ label, hideLabel, value, options, onChange, align = 'start', className, size = 'md', tooltip }: SelectProps<T>) {
   const id = useId();
   const labelId = `${id}-label`;
   const buttonId = `${id}-button`;
@@ -127,27 +130,53 @@ export function Select<T extends string>({ label, hideLabel, value, options, onC
       <span id={labelId} className={clsx(hideLabel ? 'sr-only' : 'mb-1.5 block text-sm font-medium text-slate-600')}>
         {label}
       </span>
-      <button
-        ref={button}
-        id={buttonId}
-        type="button"
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        aria-controls={open ? listId : undefined}
-        aria-labelledby={`${labelId} ${buttonId}`}
-        onClick={() => (open ? close(false) : openAt(selectedIndex))}
-        onKeyDown={onButtonKey}
-        className={clsx(
-          'flex w-full items-center justify-between gap-2 rounded-xl bg-white text-left font-semibold text-slate-900 shadow-card ring-1 ring-black/[0.06]',
-          'transition-[box-shadow,background-color] duration-200 ease-out-soft hover:shadow-raised',
-          size === 'sm' ? 'px-3 py-1.5 text-sm' : 'px-3.5 py-2 text-sm',
-        )}
-      >
-        <span className="flex min-w-0 items-center gap-2">
-          <span className="truncate">{selected?.label}</span>
-        </span>
-        <LuChevronDown aria-hidden="true" size={16} className={clsx('shrink-0 text-slate-500 transition-transform duration-200 ease-out-soft', open && 'rotate-180')} />
-      </button>
+      {tooltip ? (
+        <Tooltip content={tooltip} className="w-full">
+          <button
+            ref={button}
+            id={buttonId}
+            type="button"
+            aria-haspopup="listbox"
+            aria-expanded={open}
+            aria-controls={open ? listId : undefined}
+            aria-labelledby={`${labelId} ${buttonId}`}
+            onClick={() => (open ? close(false) : openAt(selectedIndex))}
+            onKeyDown={onButtonKey}
+            className={clsx(
+              'flex w-full items-center justify-between gap-2 rounded-xl bg-white text-left font-semibold text-slate-900 shadow-card ring-1 ring-black/[0.06]',
+              'transition-[box-shadow,background-color] duration-200 ease-out-soft hover:shadow-raised',
+              size === 'sm' ? 'px-3 py-1.5 text-sm' : 'px-3.5 py-2 text-sm',
+            )}
+          >
+            <span className="flex min-w-0 items-center gap-2">
+              <span className="truncate">{selected?.label}</span>
+            </span>
+            <LuChevronDown aria-hidden="true" size={16} className={clsx('shrink-0 text-slate-500 transition-transform duration-200 ease-out-soft', open && 'rotate-180')} />
+          </button>
+        </Tooltip>
+      ) : (
+        <button
+          ref={button}
+          id={buttonId}
+          type="button"
+          aria-haspopup="listbox"
+          aria-expanded={open}
+          aria-controls={open ? listId : undefined}
+          aria-labelledby={`${labelId} ${buttonId}`}
+          onClick={() => (open ? close(false) : openAt(selectedIndex))}
+          onKeyDown={onButtonKey}
+          className={clsx(
+            'flex w-full items-center justify-between gap-2 rounded-xl bg-white text-left font-semibold text-slate-900 shadow-card ring-1 ring-black/[0.06]',
+            'transition-[box-shadow,background-color] duration-200 ease-out-soft hover:shadow-raised',
+            size === 'sm' ? 'px-3 py-1.5 text-sm' : 'px-3.5 py-2 text-sm',
+          )}
+        >
+          <span className="flex min-w-0 items-center gap-2">
+            <span className="truncate">{selected?.label}</span>
+          </span>
+          <LuChevronDown aria-hidden="true" size={16} className={clsx('shrink-0 text-slate-500 transition-transform duration-200 ease-out-soft', open && 'rotate-180')} />
+        </button>
+      )}
       <AnimatePresence>
         {open ? (
           <motion.ul

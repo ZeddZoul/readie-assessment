@@ -1,10 +1,12 @@
+import { isOneOf } from '../lib/guards';
+
 export const MOCK_SCENARIOS = ['normal', 'slow', 'error-500', 'error-401', 'invalid-shape'] as const;
 export type MockScenario = (typeof MOCK_SCENARIOS)[number];
 
 const KEY = 'readie.mockScenario';
 let current: MockScenario = 'normal';
 
-const isScenario = (v: string | null): v is MockScenario => v !== null && (MOCK_SCENARIOS as readonly string[]).includes(v);
+export const isScenario = (v: string | null): v is MockScenario => v !== null && isOneOf(MOCK_SCENARIOS, v);
 
 function readStorage(): string | null {
   try {

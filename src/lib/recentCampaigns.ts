@@ -1,3 +1,5 @@
+import { isUnknownArray } from './guards';
+
 /**
  * Campaigns the auditor has opened on this device, newest first. There is no "list campaigns"
  * endpoint, so recents plus "type any ID" is how the switcher scales to any number of campaigns.
@@ -25,8 +27,8 @@ const isCampaignId = (v: unknown): v is number => typeof v === 'number' && Numbe
 
 export function readRecentCampaigns(): number[] {
   try {
-    const raw: unknown = JSON.parse(localStorage.getItem(KEY) ?? '[]');
-    return Array.isArray(raw) ? raw.filter(isCampaignId).slice(0, MAX) : [];
+    const raw = JSON.parse(localStorage.getItem(KEY) ?? '[]');
+    return isUnknownArray(raw) ? raw.filter(isCampaignId).slice(0, MAX) : [];
   } catch {
     return [];
   }

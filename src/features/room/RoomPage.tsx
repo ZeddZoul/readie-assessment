@@ -7,6 +7,7 @@ import { useRoomEvaluation } from '../../api/queries';
 import { AsyncBoundary } from '../../components/ui/AsyncBoundary';
 import { LuChevronLeft } from 'react-icons/lu';
 import { Reveal } from '../../components/ui/Reveal';
+import { Tooltip } from '../../components/ui/Tooltip';
 import { RoomSkeleton } from '../../components/ui/Skeletons';
 import { Button, EmptyState } from '../../components/ui/States';
 import type { AnalysedRecording, RoomEvaluation } from '../../domain/types';
@@ -104,7 +105,7 @@ function TabFade({ children }: { readonly children: ReactNode }) {
   );
 }
 
-const COUNT_HINT: Readonly<Record<RoomTab, string>> = { transcript: 'entries', identity: 'anomalies', integrity: 'flagged frames' };
+const COUNT_HINT: Readonly<Record<RoomTab, string>> = { transcript: 'transcript entries', identity: 'identity anomalies', integrity: 'flagged frames' };
 
 function RoomView({ room }: { readonly room: RoomEvaluation }) {
   const { tab, setTab, selected, setRecording } = useRoomUrlState(room);
@@ -127,35 +128,40 @@ function RoomView({ room }: { readonly room: RoomEvaluation }) {
               {ROOM_TABS.map((t) => {
                 const count = tabCount(t, selected);
                 return (
-                  <Tabs.Trigger
+                  <Tooltip
                     key={t}
-                    value={t}
-                    aria-label={TAB_LABELS[t]}
-                    className={clsx(
-                      'group relative flex flex-1 items-center justify-center gap-1.5 rounded-lg px-2.5 py-2 sm:gap-2 sm:px-3.5 text-sm font-semibold whitespace-nowrap lg:flex-none',
-                      'text-slate-600 transition-colors duration-200 ease-out-soft hover:text-slate-900 data-[state=active]:text-slate-900',
-                    )}
+                    className="flex-1 lg:flex-none"
+                    content={count === null ? TAB_LABELS[t] : `${count} ${COUNT_HINT[t]}`}
+                    describe={count !== null}
                   >
-                    {tab === t ? (
-                      <motion.span
-                        layoutId="room-tab-pill"
-                        aria-hidden="true"
-                        className="absolute inset-0 rounded-lg bg-white shadow-card ring-1 ring-slate-200/80"
-                        transition={{ type: 'spring', stiffness: 520, damping: 40 }}
-                      />
-                    ) : null}
-                    <span className="relative sm:hidden">{TAB_SHORT_LABELS[t]}</span>
-                    <span className="relative hidden sm:inline">{TAB_LABELS[t]}</span>
-                    {count !== null ? (
-                      <span
-                        aria-hidden="true"
-                        title={`${count} ${COUNT_HINT[t]}`}
-                        className="relative rounded-full bg-slate-200/80 px-1.5 py-px text-[11px] font-semibold text-slate-600 tabular-nums group-data-[state=active]:bg-brand-50 group-data-[state=active]:text-brand-700"
-                      >
-                        {count}
-                      </span>
-                    ) : null}
-                  </Tabs.Trigger>
+                    <Tabs.Trigger
+                      value={t}
+                      aria-label={TAB_LABELS[t]}
+                      className={clsx(
+                        'group relative flex flex-1 items-center justify-center gap-1.5 rounded-lg px-2.5 py-2 sm:gap-2 sm:px-3.5 text-sm font-semibold whitespace-nowrap lg:flex-none',
+                        'text-slate-600 transition-colors duration-200 ease-out-soft hover:text-slate-900 data-[state=active]:text-slate-900',
+                      )}
+                    >
+                      {tab === t ? (
+                        <motion.span
+                          layoutId="room-tab-pill"
+                          aria-hidden="true"
+                          className="absolute inset-0 rounded-lg bg-white shadow-card ring-1 ring-slate-200/80"
+                          transition={{ type: 'spring', stiffness: 520, damping: 40 }}
+                        />
+                      ) : null}
+                      <span className="relative sm:hidden">{TAB_SHORT_LABELS[t]}</span>
+                      <span className="relative hidden sm:inline">{TAB_LABELS[t]}</span>
+                      {count !== null ? (
+                        <span
+                          aria-hidden="true"
+                          className="relative rounded-full bg-slate-200/80 px-1.5 py-px text-[11px] font-semibold text-slate-600 tabular-nums group-data-[state=active]:bg-brand-50 group-data-[state=active]:text-brand-700"
+                        >
+                          {count}
+                        </span>
+                      ) : null}
+                    </Tabs.Trigger>
+                  </Tooltip>
                 );
               })}
             </Tabs.List>

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { SearchIcon, XIcon } from '../../components/ui/Icons';
 import { Select } from '../../components/ui/Select';
+import { Tooltip } from '../../components/ui/Tooltip';
 import type { JobsView, SortDirection } from './filterSortJobs';
 
 const SORT_OPTIONS: readonly { value: SortDirection; label: string }[] = [
@@ -61,16 +62,34 @@ export function JobsToolbar({
             <XIcon width={14} height={14} />
           </button>
         ) : (
-          <kbd aria-hidden="true" className="pointer-events-none absolute top-1/2 right-2.5 hidden -translate-y-1/2 rounded border border-slate-200 bg-white px-1.5 font-mono text-[11px] text-slate-500 sm:block">
-            /
-          </kbd>
+          <span className="absolute top-1/2 right-2.5 hidden -translate-y-1/2 sm:block">
+            <Tooltip content="Press / to search from anywhere on this page" describe={false}>
+              <kbd
+                aria-hidden="true"
+                onClick={() => input.current?.focus()}
+                className="cursor-pointer rounded border border-slate-200 bg-white px-1.5 font-mono text-[11px] text-slate-500"
+              >
+                /
+              </kbd>
+            </Tooltip>
+          </span>
         )}
       </div>
       <div className="flex items-center justify-between gap-4 md:justify-end">
         <p className="text-sm text-slate-500 tabular-nums" aria-live="polite">
           Showing <span className="font-semibold text-slate-900">{shown}</span> of {total} candidates
         </p>
-        <Select className="w-40" label="Sort by submission time" hideLabel size="sm" align="end" value={view.sort} options={SORT_OPTIONS} onChange={(sort) => onChange({ ...view, sort })} />
+        <Select
+          className="w-40"
+          label="Sort by submission time"
+          hideLabel
+          size="sm"
+          align="end"
+          value={view.sort}
+          options={SORT_OPTIONS}
+          onChange={(sort) => onChange({ ...view, sort })}
+          tooltip="Sort by submission time"
+        />
       </div>
     </div>
   );
