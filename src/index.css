@@ -1,0 +1,139 @@
+@import "tailwindcss";
+
+@theme {
+  /* Apple system stack: SF Pro / SF Mono on Apple platforms, native fallbacks elsewhere. No web fonts. */
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* Neutrals: Apple's greys (slate is remapped so every existing utility inherits them). */
+  --color-slate-50: #f5f5f7;
+  --color-slate-100: #efeff2;
+  --color-slate-200: #e5e5ea;
+  --color-slate-300: #d2d2d7;
+  --color-slate-400: #aeaeb2;
+  --color-slate-500: #6e6e73;
+  --color-slate-600: #515154;
+  --color-slate-700: #3a3a3c;
+  --color-slate-800: #2c2c2e;
+  --color-slate-900: #1d1d1f;
+  --color-slate-950: #111113;
+
+  /* Status tints: muted system green / orange / red / blue, AA-safe text shades. */
+  --color-emerald-50: #eef8f1;
+  --color-emerald-100: #dcf2e3;
+  --color-emerald-500: #34c759;
+  --color-emerald-600: #28a745;
+  --color-emerald-700: #1f7a37;
+  --color-emerald-800: #1b6b30;
+  --color-amber-50: #fff6e8;
+  --color-amber-100: #ffecd0;
+  --color-amber-200: #ffdcaa;
+  --color-amber-300: #ffc670;
+  --color-amber-500: #ff9f0a;
+  --color-amber-600: #e08600;
+  --color-amber-800: #8a4b00;
+  --color-amber-900: #6e3c00;
+  --color-red-50: #fff2f1;
+  --color-red-100: #ffe1df;
+  --color-red-200: #ffcbc7;
+  --color-red-500: #ff3b30;
+  --color-red-600: #e5352b;
+  --color-red-700: #c22a21;
+  --color-red-800: #a8241c;
+  --color-red-900: #861d16;
+  --color-sky-50: #eef6ff;
+  --color-sky-100: #dcecff;
+  --color-sky-500: #1e90ff;
+  --color-sky-800: #085cb8;
+
+  /* Brand accent: dodger blue (#1E90FF) at 500. Text and filled buttons use 600–700 for AA contrast. */
+  --color-brand-50: #eef7ff;
+  --color-brand-100: #d9edff;
+  --color-brand-200: #bce0ff;
+  --color-brand-300: #8ecdff;
+  --color-brand-400: #59b0ff;
+  --color-brand-500: #1e90ff;
+  --color-brand-600: #0a72e0;
+  --color-brand-700: #085cb8;
+  --color-brand-800: #0b4d94;
+  --color-brand-900: #0f4179;
+  --color-brand-950: #0b2a4f;
+
+  /* One radius and one shadow language for every surface. */
+  --radius-card: 1.25rem;
+  --shadow-card: 0 1px 1px rgb(0 0 0 / 0.02), 0 2px 12px rgb(0 0 0 / 0.04);
+  --shadow-raised: 0 2px 4px rgb(0 0 0 / 0.03), 0 12px 32px -8px rgb(0 0 0 / 0.12);
+
+  /* Decelerating ease used by every transition and reveal. */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Display scale: each step carries its own leading and tracking. */
+@utility text-display {
+  font-size: clamp(2rem, 1.25rem + 2.4vw, 3rem);
+  line-height: 1.05;
+  letter-spacing: -0.032em;
+  font-weight: 700;
+}
+@utility text-title {
+  font-size: clamp(1.125rem, 1rem + 0.55vw, 1.5rem);
+  line-height: 1.2;
+  letter-spacing: -0.018em;
+  font-weight: 650;
+}
+@utility text-eyebrow {
+  font-size: 0.6875rem;
+  line-height: 1rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  background: var(--color-slate-50);
+  color: var(--color-slate-900);
+  min-height: 100vh;
+  letter-spacing: -0.003em;
+}
+
+::selection {
+  background: var(--color-brand-100);
+  color: var(--color-brand-950);
+}
+
+/* Base-layer focus ring, so a component's own focus style (e.g. the search field's ring) replaces it instead of stacking. */
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--color-brand-600);
+    outline-offset: 2px;
+  }
+}
+
+/* Reveal primitive: one short rise-and-fade, once, on entering the viewport. */
+.reveal {
+  opacity: 0;
+  transform: translateY(10px);
+}
+.reveal[data-visible="true"] {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 520ms var(--ease-out-soft),
+    transform 520ms var(--ease-out-soft);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .reveal[data-visible="true"] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
